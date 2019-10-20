@@ -1,5 +1,5 @@
 # AX-4
-This is a sample of GAN by TF2.0
+This is a sample of AutoEncoder by TF2.0
 
 ## How to use
 0.install required modules
