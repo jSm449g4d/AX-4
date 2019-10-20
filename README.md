@@ -5,7 +5,8 @@ This is a sample of AutoEncoder by TF2.0
 ## How to use
 0.install required modules
 
-1.`python3 main1.py` 
+1.`python3 main1.py` or `python3 main2.py`
+  (main1 is more like `main1.py` and `main2.py` is more like Keras)
 
 ### required
 tensorflow2.0
