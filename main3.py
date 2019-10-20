@@ -33,14 +33,14 @@ class AE(tf.keras.Model):
     def __init__(self,trial={},opt=keras.optimizers.Adam(1e-3)):
         super().__init__()
         self.layer1=[Flatten(),
-                     Dense(trial.suggest_int("a", 32, 256),activation="elu"),
-                     Dense(trial.suggest_int("b", 32, 256),activation="elu"),
-                     Dropout(trial.suggest_uniform("A",0,0.5)),
-                     Dense(8,activation="sigmoid")
+                     Dense(trial.suggest_int("a", 32,256),activation="elu"),
+                     Dense(trial.suggest_int("b", 32,128),activation="elu"),
+                     Dropout(trial.suggest_uniform("A",0,0.4)),
+                     Dense(12,activation="sigmoid")
                      ]
-        self.layer2=[Dense(trial.suggest_int("c", 32, 256),activation="elu"),
+        self.layer2=[Dense(trial.suggest_int("c", 32, 128),activation="elu"),
                      Dense(trial.suggest_int("d", 32, 256),activation="elu"),
-                     Dropout(trial.suggest_uniform("B",0,0.5)),
+                     Dropout(trial.suggest_uniform("B",0,0.4)),
                      Dense(28*28,activation="sigmoid"),
                      Reshape((28,28))
                      ]
@@ -63,7 +63,7 @@ class K_B(keras.callbacks.Callback):
         iy=random.randint(0,x_test.shape[0]-batch)
         tf2img(self.model(x_test[iy:iy+batch]),"./output1_p",epoch=epoch)
         tf2img(x_test[iy:iy+batch],"./output1_t",epoch=epoch)
-        tf2img(self.model.pred(np.random.rand(batch,8).astype(np.float32)),"./output2_p",epoch=epoch)
+        tf2img(self.model.pred(np.random.rand(batch,12).astype(np.float32)),"./output2_p",epoch=epoch)
 
 def objective(trial,FT=0):
     model = AE(trial=trial)
