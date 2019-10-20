@@ -17,4 +17,9 @@ tqdm
 
 cv2
 
+pickle
+
+optuna
+
 pip install git+https://github.com/jSm449g4d/AR9
+
