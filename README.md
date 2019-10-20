@@ -1,5 +1,5 @@
 # AX-4
-This is a sample of AutoEncoder by Tensorflow2.0 + Optuna
+This is a sample of AutoEncoder by Tensorflow2.0 + **Optuna**
 ![AE](https://github.com/jSm449g4d/AX-4/blob/master/assets/AE.png)
 Example with MNIST
 
