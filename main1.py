@@ -12,7 +12,7 @@ import random
 from ARutil import mkdiring,rootYrel
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-x_train,x_test= (x_train.astype(np.float32)/ 256,x_train.astype(np.float32)/ 256)
+x_train,x_test= (x_train.astype(np.float32)/ 256,x_test.astype(np.float32)/ 256)
 
 def tf2img(tfs,dir="./",name="",epoch=0,ext=".png"):
     mkdiring(dir)
