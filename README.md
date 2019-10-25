@@ -8,11 +8,10 @@ Example with MNIST
 
 1.`python3 main1.py` or `python3 main2.py` or `python3 main4.py`<br>
   (`main1.py` is more like Tensorflow and `main2.py` is more like Keras)<br>
-  (`main4.py` is hyperparameter optimization by **Optuna**)
+  (`main4.py` is hyperparameter optimization by **Optuna**)<br>
 　(`main4.py` is temporary implementation of save, self-attention ,etc..)
+
 ![params](https://github.com/jSm449g4d/AX-4/blob/master/assets/params.png)
-
-
 
 ### required
 tensorflow2.0
