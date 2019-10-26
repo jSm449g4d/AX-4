@@ -118,7 +118,7 @@ def objective(trial=0,FT=0):
     model.compile(optimizer =keras.optimizers.Adam(1e-3),
                           loss=keras.losses.binary_crossentropy,
                           metrics=['accuracy'])
-    hist=model.fit(x_train,x_train,batch_size=batch,epochs=5,callbacks=callbacks,validation_split=0.1,verbose=1)
+    hist=model.fit(x_train,x_train,batch_size=batch,epochs=15,callbacks=callbacks,validation_split=0.1,verbose=1)
     
     if FT!=0:
         print(hist.history,file=codecs.open('hist.txt', 'w', 'utf-8'))
