@@ -46,15 +46,17 @@ class SAttn(tf.keras.Model):
         self.norm=LayerNormalization(epsilon=1e-6)
         self.ffn=Dense(dim,activation="elu")
         
-    def call(self,mod):
+    def call(self,mod,inp_mod=0):
         mod=self.dim_linear(mod);
         with tf.name_scope("S_A_MH"):
             mh=tf.split(self.norm(mod),self.head,-1)
+            if inp_mod!=0:mh_kv=tf.split(self.norm(inp_mod),self.head,-1)
+            else:mh_kv=mh
             for i in range(self.head):
                 with tf.name_scope("S_A_"+str(i)):
                     mh[i]=self.attn([self.QKV[i][0](mh[i]),
-                                    self.QKV[i][2](mh[i]),
-                                    self.QKV[i][1](mh[i])])
+                                    self.QKV[i][2](mh_kv[i]),
+                                    self.QKV[i][1](mh_kv[i])])
             mh=tf.concat(mh,-1)
         mod=keras.layers.add([mod,mh])
         with tf.name_scope("FNN"+str(i)):
@@ -66,13 +68,15 @@ class AE(tf.keras.Model):
         super().__init__()
         
         self.layer1=[Flatten(),
-                     SAttn(trial.suggest_int("a",32,256)),
-                     SAttn(trial.suggest_int("b",32,256)),
+                     Dense(128),
+                     Reshape((128,1)),
+                     SAttn(trial.suggest_int("b",8,64)),
                      Dropout(0.1),
+                     Flatten(),
                      Dense(12,activation="sigmoid")
                      ]
-        self.layer2=[SAttn(trial.suggest_int("c",32,256)),
-                     SAttn(trial.suggest_int("d",32,256)),
+        self.layer2=[Dense(32),
+                     Dense(128),
                      Dropout(0.1),
                      Dense(28*28,activation="sigmoid"),
                      Reshape((28,28))
@@ -85,7 +89,7 @@ class AE(tf.keras.Model):
         for i in range(len(self.layer2)):mod=self.layer2[i](mod)
         return mod
 
-batch=32
+batch=64
 
 class K_B(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
@@ -96,26 +100,25 @@ class K_B(keras.callbacks.Callback):
 
 def objective(trial=0,FT=0):
     model = AE(trial=trial)
-    model.build(input_shape=(batch,28,28))
+    model.build(input_shape=(1,28,28))#
     model.summary()
-    
-    try:model.load_weights("svm.h5")
-    except:print("****not_exist_savefile****")
     
     callbacks=[]
     if FT!=0:
+        try:model.load_weights("svm.h5")
+        except:print("****not_exist_savefile****")
         callbacks=[K_B(),
                    keras.callbacks.TensorBoard(log_dir="logs")]
     model.compile(optimizer =keras.optimizers.Adam(1e-3),
                           loss=keras.losses.binary_crossentropy,
                           metrics=['accuracy'])
-    hist=model.fit(x_train,x_train,batch_size=batch,epochs=10,callbacks=callbacks,validation_split=0.1,verbose=1)
+    hist=model.fit(x_train,x_train,batch_size=batch,epochs=5,callbacks=callbacks,validation_split=0.1,verbose=1)
     
-    model.save_weights("svm.h5")
-#    tf.saved_model.save(model,"sv")
+    if FT!=0:
+        print(hist.history,file=codecs.open('hist.txt', 'w', 'utf-8'))
+        model.save_weights("svm.h5")#;tf.saved_model.save(model,"sv")
     
     if FT==0:
-        print(hist.history,file=codecs.open('hist.txt', 'w', 'utf-8'))
         tm_dict={"loss":(hist.history['val_loss'])[-1]};tm_dict.update(trial.params)
         with open("opt_hist.csv","a+",encoding='utf-8') as f:
             writer = csv.DictWriter(f,lineterminator='\n',fieldnames=list(tm_dict.keys()))
@@ -131,7 +134,7 @@ if __name__ == '__main__':
         with open('./opt.pickle', 'rb') as f:study = pickle.load(f)
     except:
         study = optuna.create_study();
-    study.optimize(objective, n_trials=20)
+    study.optimize(objective, n_trials=10)
     with open('./opt.pickle', 'wb') as f:pickle.dump(study, f)
     print("best_params:",study.best_params)
     objective(optuna.trial.FixedTrial(study.best_params),FT=1)
