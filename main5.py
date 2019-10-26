@@ -5,7 +5,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras.layers import Dense,Dropout,Conv2D,Conv2DTranspose,\
 ReLU,Softmax,Flatten,Reshape,UpSampling2D,Input,Activation,LayerNormalization,\
-Attention
+Attention,Conv1D
 import random
 import optuna
 import pickle
@@ -37,21 +37,27 @@ class SAttn(tf.keras.Model):
     def __init__(self,dim,head=8):
         super().__init__()
         self.head=head;split_dim=int(dim/head);dim=split_dim*head
-        self.dim_linear=Dense(dim,use_bias=False)
+        self.linear=Conv1D(dim,1,padding="same",use_bias=False)
+        self.linear_dec=Conv1D(dim,1,padding="same",use_bias=False)
         self.QKV=[[0 for i in range(3)] for j in range(head)]
         for i in range (head):
             for j in range(3):
-                self.QKV[i][j]=Dense(split_dim,use_bias=False)
+                self.QKV[i][j]=Conv1D(split_dim,1,padding="same",use_bias=False)
         self.attn=Attention()
         self.norm=LayerNormalization(epsilon=1e-6)
-        self.ffn=Dense(dim,activation="elu")
+        self.ffn=Conv1D(dim,1,padding="same",activation="elu")
         
-    def call(self,mod,inp_mod=0):
-        mod=self.dim_linear(mod);
+    def call(self,mod,dec=0):
+        if dec==0:dec=mod
+        with tf.name_scope("Linear"):
+            mod=Reshape((-1,mod.shape[-1]))(mod)
+            mod=self.linear(mod)
+        with tf.name_scope("Linear_dec"):
+            dec=Reshape((-1,dec.shape[-1]))(dec)
+            dec=self.linear_dec(dec)
         with tf.name_scope("S_A_MH"):
             mh=tf.split(self.norm(mod),self.head,-1)
-            if inp_mod!=0:mh_kv=tf.split(self.norm(inp_mod),self.head,-1)
-            else:mh_kv=mh
+            mh_kv=tf.split(self.norm(dec),self.head,-1)
             for i in range(self.head):
                 with tf.name_scope("S_A_"+str(i)):
                     mh[i]=self.attn([self.QKV[i][0](mh[i]),
@@ -67,10 +73,10 @@ class AE(tf.keras.Model):
     def __init__(self,trial={}):
         super().__init__()
         
-        self.layer1=[Flatten(),
-                     Dense(128),
-                     Reshape((128,1)),
-                     SAttn(trial.suggest_int("b",8,64)),
+        self.layer1=[Reshape((28,28,1)),
+                     Conv2D(2,4,2,padding="same",activation="elu"),
+                     Conv2D(4,4,2,padding="same",activation="elu"),
+                     SAttn(64),#trial.suggest_int("b",8,64)
                      Dropout(0.1),
                      Flatten(),
                      Dense(12,activation="sigmoid")
@@ -134,8 +140,8 @@ if __name__ == '__main__':
         with open('./opt.pickle', 'rb') as f:study = pickle.load(f)
     except:
         study = optuna.create_study();
-    study.optimize(objective, n_trials=10)
-    with open('./opt.pickle', 'wb') as f:pickle.dump(study, f)
-    print("best_params:",study.best_params)
-    objective(optuna.trial.FixedTrial(study.best_params),FT=1)
+#    study.optimize(objective, n_trials=10)
+#    with open('./opt.pickle', 'wb') as f:pickle.dump(study, f)
+#    print("best_params:",study.best_params)
+    objective(FT=1)#optuna.trial.FixedTrial(study.best_params),
     
