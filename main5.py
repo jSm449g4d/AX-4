@@ -76,7 +76,7 @@ class AE(tf.keras.Model):
         self.layer1=[Reshape((28,28,1)),
                      Conv2D(2,4,2,padding="same",activation="elu"),
                      Conv2D(4,4,2,padding="same",activation="elu"),
-                     SAttn(4),#trial.suggest_int("b",8,64)
+                     SAttn(32),#trial.suggest_int("b",8,64)
                      Dropout(0.1),
                      Flatten(),
                      Dense(12,activation="sigmoid")
