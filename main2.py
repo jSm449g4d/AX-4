@@ -13,6 +13,7 @@ from ARutil import mkdiring,rootYrel
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-b', '--batch' ,help="batch",type=int)
+parser.add_argument('-e', '--epoch' ,help="epochs",type=int)
 args = parser.parse_args()
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
@@ -59,7 +60,9 @@ class AE(tf.keras.Model):
         return mod
 
 batch=16
+epochs=10
 if args.batch:batch=args.batch;print("\n**batch=",batch)
+if args.epoch:epoch=args.epoch;print("\n**epoch=",epochs)
 
 class K_B(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
@@ -80,7 +83,7 @@ def objective(trial):
     model.compile(optimizer =keras.optimizers.Adam(1e-3),
                           loss=keras.losses.binary_crossentropy,
                           metrics=['accuracy'])
-    model.fit(x_train,x_train,batch_size=batch,epochs=10, callbacks=[kb])
+    model.fit(x_train,x_train,batch_size=batch,epochs=epochs, callbacks=[kb])
      
     return loss_for_return
     
