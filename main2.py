@@ -62,7 +62,7 @@ class AE(tf.keras.Model):
 batch=16
 epochs=10
 if args.batch:batch=args.batch;print("\n**batch=",batch)
-if args.epoch:epoch=args.epoch;print("\n**epoch=",epochs)
+if args.epoch:epochs=args.epoch;print("\n**epoch=",epochs)
 
 class K_B(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
