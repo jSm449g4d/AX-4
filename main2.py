@@ -7,9 +7,13 @@ from tensorflow.keras.layers import Dense,Dropout,Conv2D,Conv2DTranspose,\
 ReLU,Softmax,Flatten,Reshape,UpSampling2D,Input,Activation,LayerNormalization
 from tqdm import tqdm
 import random
-
+import argparse
 
 from ARutil import mkdiring,rootYrel
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-b', '--batch' ,help="batch",type=int)
+args = parser.parse_args()
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 x_train,x_test= (x_train.astype(np.float32)/ 256,x_test.astype(np.float32)/ 256)
@@ -26,9 +30,8 @@ def tf_ini():#About GPU resources
     for k in range(len(physical_devices)):
         tf.config.experimental.set_memory_growth(physical_devices[k], True)
     if len(physical_devices)==0:print("GPU failed!")
-    return len(physical_devices)
+    
 tf_ini()
-
 class AE(tf.keras.Model):
     def __init__(self,trials={},opt=keras.optimizers.Adam(1e-3)):
         super().__init__()
@@ -56,6 +59,7 @@ class AE(tf.keras.Model):
         return mod
 
 batch=16
+if args.batch:batch=args.batch;print("\n**batch=",batch)
 
 class K_B(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
