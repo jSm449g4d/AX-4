@@ -12,11 +12,11 @@ Example with MNIST
 ![params](https://github.com/jSm449g4d/AX-4/blob/master/assets/params.png)<br>
 　(`main5.py` is temporary implementation of save, self-attention ,etc..)<br>
 ### required
-tensorflow2.0
+tensorflow2.x
 
 tqdm
 
-cv2
+opencv-python
 
 pickle
 
